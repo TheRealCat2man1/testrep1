@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>LiftTrack Onyx</title>
     <style>
-        /* BASE STYLES */
         :root {
             --bg-dark: #121212;
             --bg-matte: #1E1E1E;
@@ -21,180 +22,250 @@
             background-color: var(--bg-dark); 
             color: var(--text-main); 
             margin: 0; 
-            padding-bottom: 50px; 
+            overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* HEADER & NAVIGATION */
         header {
-            background-color: rgba(18, 18, 18, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            background-color: rgba(18, 18, 18, 0.9);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            position: sticky; top: 0; z-index: 100;
             border-bottom: 1px solid var(--bg-onyx);
+            padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
         }
 
-        .header-top {
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        h1 { margin: 0; font-size: 20px; letter-spacing: -1px; font-weight: 800; }
+        h1 { margin: 0; font-size: 18px; letter-spacing: -1px; font-weight: 800; }
         .neon-text { color: var(--neon); }
 
-        nav { display: flex; overflow-x: auto; }
-        .tab-btn {
-            flex: 1;
-            background: none;
-            border: none;
-            border-bottom: 2px solid transparent;
-            color: var(--text-dim);
-            padding: 15px 0;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            cursor: pointer;
-        }
-        .tab-btn.active { color: var(--neon); border-bottom-color: var(--neon); }
+        .menu-btn { background: none; border: none; cursor: pointer; padding: 5px; display: flex; flex-direction: column; gap: 5px; }
+        .menu-btn div { width: 22px; height: 2px; background-color: var(--neon); border-radius: 2px; }
 
-        /* FORM */
+        /* SIDE NAV */
+        .side-nav {
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+            background-color: var(--bg-matte); z-index: 200;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 40px 20px; box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+        .side-nav.open { left: 0; }
+
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 150; display: none; }
+
+        .nav-section { margin-bottom: 35px; }
+        .nav-label { font-size: 10px; font-weight: 800; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; display: block; letter-spacing: 1px; }
+
+        .nav-link {
+            display: flex; align-items: center; color: var(--text-main);
+            text-decoration: none; padding: 14px 0; font-size: 15px; font-weight: 600;
+            border-bottom: 1px solid var(--bg-onyx);
+        }
+        
+        .nav-link-new {
+            color: var(--neon) !important;
+            border-bottom: 1px solid var(--bg-onyx) !important;
+            text-decoration: none !important;
+        }
+
+        .nav-link.active { color: var(--neon); border-bottom-color: var(--neon); }
+
+        .plus-icon { margin-left: auto; color: var(--neon); display: flex; font-size: 18px; }
+
+        /* MODAL */
+        .modal {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--bg-matte); padding: 30px 25px 25px; border-radius: 20px;
+            z-index: 300; width: 85%; max-width: 350px; display: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+        }
+        .modal.open { display: block; }
+        .modal-close {
+            position: absolute; top: 12px; right: 15px;
+            background: none; border: none; color: var(--text-dim);
+            font-size: 20px; font-weight: 300; cursor: pointer;
+        }
+
+        /* MAIN CONTENT */
         main { max-width: 500px; margin: 0 auto; padding: 20px; }
-
-        .input-card {
-            background-color: var(--bg-matte);
-            padding: 20px;
-            border-radius: 16px;
-            margin-bottom: 30px;
-            transition: all 0.3s ease;
-        }
-
-        .input-card.editing { border: 1px solid var(--neon); box-shadow: 0 0 15px rgba(0, 255, 255, 0.1); }
+        .input-card { background-color: var(--bg-matte); padding: 20px; border-radius: 16px; margin-bottom: 30px; }
+        .input-card.editing { border: 1px solid var(--neon); }
 
         input {
-            width: 100%;
-            background-color: var(--bg-onyx);
-            border: none;
-            border-radius: 10px;
-            padding: 12px;
-            color: white;
-            font-size: 16px; /* Prevents iPhone zoom on focus */
-            margin-bottom: 12px;
+            width: 100%; background-color: var(--bg-onyx); border: none;
+            border-radius: 10px; padding: 12px; color: white; font-size: 16px; margin-bottom: 12px;
         }
-
         .flex-row { display: flex; gap: 12px; margin-bottom: 12px; }
         .field-group { flex: 1; }
         label { display: block; font-size: 10px; font-weight: 800; color: var(--text-dim); margin-bottom: 4px; text-transform: uppercase; }
 
         button#submitBtn {
-            width: 100%;
-            background-color: var(--neon);
-            color: black;
-            border: none;
-            padding: 15px;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        
-        button#cancelBtn {
-            background-color: var(--bg-onyx);
-            color: var(--text-dim);
-            border: none;
-            padding: 15px;
-            border-radius: 12px;
-            margin-top: 8px;
-            width: 100%;
-            font-weight: 700;
+            width: 100%; background-color: var(--neon); color: black; border: none;
+            padding: 15px; border-radius: 12px; font-weight: 800; font-size: 14px;
         }
 
-        /* LIST ITEMS */
+        /* LIFT ITEMS */
         .lift-item {
-            background-color: var(--bg-matte);
-            padding: 16px;
-            border-radius: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
+            background-color: var(--bg-matte); padding: 16px; border-radius: 16px;
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
         }
-
         .lift-info h3 { margin: 0; font-size: 17px; }
         .lift-info p { margin: 4px 0 0 0; font-size: 10px; color: var(--text-dim); font-weight: 700; }
-
-        .lift-stats { display: flex; gap: 8px; align-items: center; }
-        .stat-box {
-            background-color: var(--bg-onyx);
-            padding: 8px 12px;
-            border-radius: 10px;
-            text-align: center;
-            min-width: 55px;
-        }
-        .stat-label { font-size: 8px; color: var(--text-dim); text-transform: uppercase; display: block; }
-        .stat-val { font-weight: 900; font-size: 16px; }
+        .stat-box { background-color: var(--bg-onyx); padding: 8px 12px; border-radius: 10px; text-align: center; min-width: 55px; }
+        .stat-val { font-weight: 900; font-size: 16px; display: block; }
         .neon-val { color: var(--neon); }
-
-        .actions { display: flex; flex-direction: column; gap: 10px; margin-left: 10px; }
-        .action-btn { background: none; border: none; font-size: 10px; font-weight: 800; cursor: pointer; }
-        .edit-btn { color: var(--neon); opacity: 0.7; }
-        .del-btn { color: #444; }
 
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="header-top">
-            <h1>LIFT.<span class="neon-text">ONYX</span></h1>
+    <div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+    <!-- NEW DAY MODAL -->
+    <div class="modal" id="dayModal">
+        <button class="modal-close" onclick="closeAll()">✕</button>
+        <h2 style="margin-top:0; font-size:18px; color:var(--neon);">Create Day</h2>
+        <label>Day Name</label>
+        <input type="text" id="newDayName" placeholder="e.g. Upper Body">
+        <button id="submitBtn" onclick="createNewDay()">Add Day</button>
+    </div>
+
+    <!-- SIDE NAVIGATION -->
+    <nav class="side-nav" id="sideNav">
+        <div class="nav-section">
+            <a href="#" class="nav-link" onclick="toggleMenu()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:12px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                Home
+            </a>
         </div>
-        <nav id="tabBar">
-            <button onclick="switchTab('Push')" class="tab-btn active">PUSH</button>
-            <button onclick="switchTab('Pull')" class="tab-btn">PULL</button>
-            <button onclick="switchTab('Legs')" class="tab-btn">LEGS</button>
-            <button onclick="switchTab('Other')" class="tab-btn">OTHER</button>
-        </nav>
+
+        <div class="nav-section">
+            <span class="nav-label">Workout Split</span>
+            <a href="#" class="nav-link nav-link-new" onclick="openDayModal()">
+                New Day <span class="plus-icon">+</span>
+            </a>
+            <div id="dynamicDays">
+                <!-- Custom Days appear here -->
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <span class="nav-label">Media</span>
+            <a href="#" class="nav-link" onclick="toggleMenu()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:12px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                Pump Pics
+            </a>
+        </div>
+    </nav>
+
+    <header>
+        <button class="menu-btn" onclick="toggleMenu()">
+            <div></div><div></div><div></div>
+        </button>
+        <h1>LIFT.<span class="neon-text">ONYX</span></h1>
+        <div style="width: 32px;"></div>
     </header>
 
     <main>
         <section id="inputForm" class="input-card">
             <input type="hidden" id="editId">
-            
-            <label>Exercise</label>
-            <input type="text" id="exerciseInput" placeholder="e.g. Bench Press">
-            
-            <div class="flex-row">
-                <div class="field-group">
-                    <label>Weight</label>
-                    <input type="number" id="weightInput" placeholder="lbs">
+            <label id="formLabel" style="color:var(--neon); font-size:14px; margin-bottom:15px;">Select a day to start</label>
+            <div id="formFields" class="hidden">
+                <input type="text" id="exerciseInput" placeholder="Exercise">
+                <div class="flex-row">
+                    <div class="field-group">
+                        <label>Weight</label>
+                        <input type="number" id="weightInput" placeholder="lbs">
+                    </div>
+                    <div class="field-group">
+                        <label>Reps</label>
+                        <input type="number" id="repsInput" placeholder="0">
+                    </div>
                 </div>
-                <div class="field-group">
-                    <label>Reps</label>
-                    <input type="number" id="repsInput" placeholder="0">
-                </div>
+                <button id="submitBtn" onclick="saveLift()">Add Entry</button>
+                <button id="cancelBtn" class="hidden" onclick="resetForm()" style="background:#282828; color:#64748b; border:none; padding:10px; width:100%; border-radius:10px; margin-top:10px;">Cancel Edit</button>
             </div>
-            
-            <button id="submitBtn" onclick="saveLift()">Add to Push</button>
-            <button id="cancelBtn" class="hidden" onclick="resetForm()">Cancel Edit</button>
         </section>
 
         <div id="liftContainer"></div>
     </main>
 
     <script>
-        let currentTab = 'Push';
-        const storageKey = 'onyx_v4_data';
+        let currentDayId = null;
+        const storageKeys = {
+            days: 'onyx_days_v2',
+            lifts: 'onyx_lifts_v2'
+        };
 
-        function switchTab(tabName) {
-            currentTab = tabName;
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.innerText === tabName.toUpperCase());
-            });
-            document.getElementById('submitBtn').innerText = `Add to ${tabName}`;
+        window.onload = () => {
+            renderDays();
+            displayLifts();
+        };
+
+        function toggleMenu() {
+            const nav = document.getElementById('sideNav');
+            const overlay = document.getElementById('overlay');
+            nav.classList.toggle('open');
+            overlay.style.display = nav.classList.contains('open') ? 'block' : 'none';
+        }
+
+        function closeAll() {
+            document.getElementById('sideNav').classList.remove('open');
+            document.getElementById('dayModal').classList.remove('open');
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function openDayModal() {
+            toggleMenu();
+            document.getElementById('dayModal').classList.add('open');
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function createNewDay() {
+            const name = document.getElementById('newDayName').value;
+            if (!name) return;
+
+            let days = JSON.parse(localStorage.getItem(storageKeys.days)) || [];
+            const newDay = { id: Date.now(), name };
+            days.push(newDay);
+            
+            localStorage.setItem(storageKeys.days, JSON.stringify(days));
+            document.getElementById('newDayName').value = '';
+            
+            renderDays();
+            closeAll();
+            selectDay(newDay.id, newDay.name);
+        }
+
+        function renderDays() {
+            const container = document.getElementById('dynamicDays');
+            const days = JSON.parse(localStorage.getItem(storageKeys.days)) || [];
+            
+            container.innerHTML = days.map(day => `
+                <a href="#" class="nav-link ${currentDayId == day.id ? 'active' : ''}" onclick="selectDay(${day.id}, '${day.name}')">
+                    ${day.name}
+                    <span style="margin-left:auto; font-size:14px; color:#444;" onclick="deleteDay(event, ${day.id})">✕</span>
+                </a>
+            `).join('');
+        }
+
+        function deleteDay(e, id) {
+            e.stopPropagation();
+            if(!confirm("Delete day?")) return;
+            let days = JSON.parse(localStorage.getItem(storageKeys.days)) || [];
+            days = days.filter(d => d.id !== id);
+            localStorage.setItem(storageKeys.days, JSON.stringify(days));
+            if (currentDayId === id) currentDayId = null;
+            renderDays();
+            displayLifts();
+        }
+
+        function selectDay(id, name) {
+            currentDayId = id;
+            document.getElementById('formLabel').innerText = name.toUpperCase();
+            document.getElementById('formFields').classList.remove('hidden');
+            renderDays();
+            closeAll();
             resetForm();
             displayLifts();
         }
@@ -205,37 +276,30 @@
             const reps = document.getElementById('repsInput').value;
             const editId = document.getElementById('editId').value;
 
-            if (!exercise || !weight || !reps) return;
+            if (!exercise || !weight || !reps || !currentDayId) return;
 
-            let lifts = JSON.parse(localStorage.getItem(storageKey)) || [];
-
+            let lifts = JSON.parse(localStorage.getItem(storageKeys.lifts)) || [];
             if (editId) {
                 lifts = lifts.map(l => l.id == editId ? {...l, exercise, weight, reps} : l);
             } else {
                 lifts.unshift({
-                    id: Date.now(),
-                    category: currentTab,
-                    exercise,
-                    weight,
-                    reps,
+                    id: Date.now(), dayId: currentDayId, exercise, weight, reps,
                     date: new Date().toLocaleDateString('en-US', {month:'short', day:'numeric'})
                 });
             }
-
-            localStorage.setItem(storageKey, JSON.stringify(lifts));
+            localStorage.setItem(storageKeys.lifts, JSON.stringify(lifts));
             resetForm();
             displayLifts();
         }
 
         function editLift(id) {
-            const lifts = JSON.parse(localStorage.getItem(storageKey)) || [];
+            const lifts = JSON.parse(localStorage.getItem(storageKeys.lifts)) || [];
             const lift = lifts.find(l => l.id === id);
             if (lift) {
                 document.getElementById('exerciseInput').value = lift.exercise;
                 document.getElementById('weightInput').value = lift.weight;
                 document.getElementById('repsInput').value = lift.reps;
                 document.getElementById('editId').value = lift.id;
-                document.getElementById('submitBtn').innerText = "Update Entry";
                 document.getElementById('cancelBtn').classList.remove('hidden');
                 document.getElementById('inputForm').classList.add('editing');
                 window.scrollTo({top: 0, behavior: 'smooth'});
@@ -247,55 +311,45 @@
             document.getElementById('weightInput').value = '';
             document.getElementById('repsInput').value = '';
             document.getElementById('editId').value = '';
-            document.getElementById('submitBtn').innerText = `Add to ${currentTab}`;
             document.getElementById('cancelBtn').classList.add('hidden');
             document.getElementById('inputForm').classList.remove('editing');
         }
 
         function deleteLift(id) {
-            if(confirm("Delete this lift?")) {
-                let lifts = JSON.parse(localStorage.getItem(storageKey)) || [];
+            if(confirm("Delete?")) {
+                let lifts = JSON.parse(localStorage.getItem(storageKeys.lifts)) || [];
                 lifts = lifts.filter(l => l.id !== id);
-                localStorage.setItem(storageKey, JSON.stringify(lifts));
+                localStorage.setItem(storageKeys.lifts, JSON.stringify(lifts));
                 displayLifts();
             }
         }
 
         function displayLifts() {
             const container = document.getElementById('liftContainer');
-            const lifts = JSON.parse(localStorage.getItem(storageKey)) || [];
-            const filtered = lifts.filter(l => l.category === currentTab);
-
-            if (filtered.length === 0) {
-                container.innerHTML = `<p style="text-align:center; color:#444; margin-top:40px; font-size:13px italic">No ${currentTab} data.</p>`;
+            if (!currentDayId) {
+                container.innerHTML = `<p style="text-align:center; color:#444; margin-top:40px;">Select a day to view logs.</p>`;
                 return;
             }
-
+            const lifts = JSON.parse(localStorage.getItem(storageKeys.lifts)) || [];
+            const filtered = lifts.filter(l => l.dayId === currentDayId);
+            if (filtered.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:#444; margin-top:40px; font-size:13px italic">No logs recorded.</p>`;
+                return;
+            }
             container.innerHTML = filtered.map(l => `
                 <div class="lift-item">
-                    <div class="lift-info">
-                        <h3>${l.exercise}</h3>
-                        <p>${l.date}</p>
-                    </div>
+                    <div class="lift-info"><h3>${l.exercise}</h3><p>${l.date}</p></div>
                     <div class="lift-stats">
-                        <div class="stat-box">
-                            <span class="stat-label">Lbs</span>
-                            <span class="stat-val neon-val">${l.weight}</span>
-                        </div>
-                        <div class="stat-box">
-                            <span class="stat-label">Reps</span>
-                            <span class="stat-val">${l.reps}</span>
-                        </div>
-                        <div class="actions">
-                            <button class="action-btn edit-btn" onclick="editLift(${l.id})">EDIT</button>
-                            <button class="action-btn del-btn" onclick="deleteLift(${l.id})">✕</button>
+                        <div class="stat-box"><span class="stat-val neon-val">${l.weight}</span></div>
+                        <div class="stat-box"><span class="stat-val">${l.reps}</span></div>
+                        <div style="margin-left:10px; display:flex; flex-direction:column; gap:8px;">
+                            <button onclick="editLift(${l.id})" style="background:none; border:none; color:var(--neon); font-size:10px; font-weight:800;">EDIT</button>
+                            <button onclick="deleteLift(${l.id})" style="background:none; border:none; color:#444; font-size:10px; font-weight:800;">✕</button>
                         </div>
                     </div>
                 </div>
             `).join('');
         }
-
-        window.onload = displayLifts;
     </script>
 </body>
 </html>
